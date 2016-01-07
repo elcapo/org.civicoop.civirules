@@ -26,7 +26,7 @@ class CRM_CivirulesCronTrigger_ActivityByTypeAndStatus extends CRM_Civirules_Tri
     if ($this->dao->fetch()) {
       $data = array();
       CRM_Core_DAO::storeValues($this->dao, $data);
-      $triggerData = new CRM_Civirules_TriggerData_Cron($this->dao->contact_id, 'Activity', $data);
+      $triggerData = new CRM_Civirules_TriggerData_Cron($this->dao->contact_id, 'ActivityContact', $data);
       return $triggerData;
     }
     return false;
@@ -53,9 +53,10 @@ class CRM_CivirulesCronTrigger_ActivityByTypeAndStatus extends CRM_Civirules_Tri
       return false;
     }
 
-    $sql = "SELECT c.*
+    $sql = "SELECT *
             FROM civicrm_activity AS a
-            WHERE a.activity_type_id = %1 AND a.status = %2";
+            JOIN civicrm_activity_contact AS ac ON ac.activity_id = a.id
+            WHERE a.activity_type_id = %1 AND a.status_id = %2";
     $params[1] = array($this->triggerParams['activity_type_id'], 'Integer');
     $params[2] = array($this->triggerParams['status_id'], 'Integer');
     $this->dao = CRM_Core_DAO::executeQuery($sql, $params, true, 'CRM_Activity_DAO_Activity');
