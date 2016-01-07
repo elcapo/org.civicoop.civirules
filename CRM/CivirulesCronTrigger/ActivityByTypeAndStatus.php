@@ -55,7 +55,7 @@ class CRM_CivirulesCronTrigger_ActivityByTypeAndStatus extends CRM_Civirules_Tri
 
     $sql = "SELECT *
             FROM civicrm_activity AS a
-            JOIN civicrm_activity_contact AS ac ON ac.activity_id = a.id
+            JOIN civicrm_activity_contact AS ac ON ac.activity_id = a.id AND ac.record_type_id = 3
             WHERE a.activity_type_id = %1 AND a.status_id = %2";
     $params[1] = array($this->triggerParams['activity_type_id'], 'Integer');
     $params[2] = array($this->triggerParams['status_id'], 'Integer');
