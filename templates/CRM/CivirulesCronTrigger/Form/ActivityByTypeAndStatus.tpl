@@ -6,6 +6,9 @@
         <div class="clear"></div>
         <div class="label">{$form.status_id.label}</div>
         <div class="content">{$form.status_id.html}</div>
+        <div class="clear"></div>
+        <div class="label">{$form.new_status_id.label}</div>
+        <div class="content">{$form.new_status_id.html}</div>
     </div>
 </div>
 <div class="crm-submit-buttons">

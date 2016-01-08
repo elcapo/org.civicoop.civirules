@@ -36,7 +36,10 @@ class CRM_CivirulesCronTrigger_Form_ActivityByTypeAndStatus extends CRM_Civirule
   public function buildQuickForm() {
     $this->add('hidden', 'rule_id');
     $this->add('select', 'activity_type_id', ts('Activity Type'), $this->getActivityTypes(), true);
-    $this->add('select', 'status_id', ts('Activity Status'), $this->getActivityStatuses(), true);
+    
+    $activity_statuses = $this->getActivityStatuses();
+    $this->add('select', 'status_id', ts('Current Activity Status'), $activity_statuses, true);
+    $this->add('select', 'new_status_id', ts('New Activity Status'), $activity_statuses, true);
 
     $this->addButtons(array(
       array('type' => 'next', 'name' => ts('Save'), 'isDefault' => TRUE,),
@@ -61,6 +64,8 @@ class CRM_CivirulesCronTrigger_Form_ActivityByTypeAndStatus extends CRM_Civirule
       $defaultValues['status_id'] = $data['status_id'];
     }
     
+    $defaultValues['new_status_id'] = $data['new_status_id'];
+
     return $defaultValues;
   }
 
@@ -73,6 +78,7 @@ class CRM_CivirulesCronTrigger_Form_ActivityByTypeAndStatus extends CRM_Civirule
   public function postProcess() {
     $data['activity_type_id'] = $this->_submitValues['activity_type_id'];
     $data['status_id'] = $this->_submitValues['status_id'];
+    $data['new_status_id'] = $this->_submitValues['new_status_id'];
     $this->rule->trigger_params = serialize($data);
     $this->rule->save();
 

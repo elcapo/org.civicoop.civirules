@@ -27,11 +27,22 @@ class CRM_CivirulesCronTrigger_ActivityByTypeAndStatus extends CRM_Civirules_Tri
       $data = array();
       CRM_Core_DAO::storeValues($this->dao, $data);
       $triggerData = new CRM_Civirules_TriggerData_Cron($this->dao->contact_id, 'ActivityContact', $data);
+      $this->changeActivityStatus($this->dao->activity_id, $this->dao->new_status_id);
       return $triggerData;
     }
     return false;
   }
 
+  /**
+   * Changes the status of the activity that triggered the rule
+   */
+  protected function changeActivityStatus($activity_id, $new_status_id) {
+    civicrm_api3('activity', 'create', array(
+      'id' => $activity_id,
+      'status_id' => $new_status_id
+    ));
+  }
+  
   /**
    * Returns an array of entities on which the trigger reacts
    *
@@ -49,16 +60,18 @@ class CRM_CivirulesCronTrigger_ActivityByTypeAndStatus extends CRM_Civirules_Tri
   private function queryForTriggerEntities() {
 
     if (empty($this->triggerParams['activity_type_id']) ||
-            empty($this->triggerParams['status_id'])) {
+            empty($this->triggerParams['status_id']) ||
+            empty($this->triggerParams['new_status_id'])) {
       return false;
     }
 
-    $sql = "SELECT *
+    $sql = "SELECT *, %3 AS new_status_id
             FROM civicrm_activity AS a
             JOIN civicrm_activity_contact AS ac ON ac.activity_id = a.id AND ac.record_type_id = 3
             WHERE a.activity_type_id = %1 AND a.status_id = %2";
     $params[1] = array($this->triggerParams['activity_type_id'], 'Integer');
     $params[2] = array($this->triggerParams['status_id'], 'Integer');
+    $params[3] = array($this->triggerParams['new_status_id'], 'Integer');
     $this->dao = CRM_Core_DAO::executeQuery($sql, $params, true, 'CRM_Activity_DAO_Activity');
 
     return true;
@@ -100,9 +113,15 @@ class CRM_CivirulesCronTrigger_ActivityByTypeAndStatus extends CRM_Civirules_Tri
     $status = civicrm_api3('OptionValue', 'getsingle', array(
       'option_group_id' => $this->getOptionGroupId('activity_status'),
       'value' => $status_id
+    ));
+    
+    $new_status_id = $this->triggerParams['new_status_id'];
+    $new_status = civicrm_api3('OptionValue', 'getsingle', array(
+      'option_group_id' => $this->getOptionGroupId('activity_status'),
+      'value' => $new_status_id
     )); 
     
-    return ts('Activities of type %1 with status %2', array( $activity_type['label'], $status['label'] ));
+    return ts('Reads activities of type %1 in status %2 and updates them to status %3', array( $activity_type['label'], $status['label'], $new_status['label'] ));
   }
   
   /**
