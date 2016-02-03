@@ -19,6 +19,18 @@ class CRM_CivirulesConditions_FieldValueComparison extends CRM_CivirulesConditio
     if (isset($data[$field])) {
       return $this->normalizeValue($data[$field]);
     }
+    
+    if ($this->isRelativeDate($field)) {
+      $relativeDate = $this->parseRelativeDate($field);
+      $field = $relativeDate['field'];
+      $interval = $relativeDate['interval'];
+      if (isset($data[$field])) {
+        $date = new DateTime($data[$field]);
+        $today = new DateTime("now");
+        $diff = $date->diff($today);
+        return $this->normalizeValue($diff->format('%'.$interval));
+      }
+    }
 
     if (strpos($field, 'custom_')===0) {
       $custom_field_id = str_replace("custom_", "", $field);
@@ -46,6 +58,40 @@ class CRM_CivirulesConditions_FieldValueComparison extends CRM_CivirulesConditio
     return null;
   }
 
+  protected function isRelativeDate($field) {
+    $result = strpos($field, '_days2today');
+    
+    if ( !$result ) {
+      $result = strpos($field, '_months2today');
+    }
+    
+    if ( !$result ) {
+      $result = strpos($field, '_years2today');
+    }
+    
+    return $result;
+  }
+  
+  protected function parseRelativeDate($field) {
+    $result = array();
+    
+    if(strpos($field, '_days2today') !== false) {
+      $result['field'] = substr($field, 0,
+        strlen($field) - strlen('_days2today'));
+      $result['interval'] = 'd';
+    } else if(strpos($field, '_months2today') !== false) {
+      $result['field'] = substr($field, 0,
+        strlen($field) - strlen('_months2today'));
+      $result['interval'] = 'm';
+    } else if(strpos($field, '_years2today') !== false) {
+      $result['field'] = substr($field, 0,
+        strlen($field) - strlen('_years2today'));
+      $result['interval'] = 'y';
+    }
+    
+    return $result;
+  }
+  
   /**
    * Returns an array of value when the custom field is a multi select
    * otherwise just return the value

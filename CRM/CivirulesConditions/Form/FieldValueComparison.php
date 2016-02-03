@@ -49,6 +49,17 @@ class CRM_CivirulesConditions_Form_FieldValueComparison extends CRM_CivirulesCon
             $label = $field['name'];
           }
           $return[$fieldKey] = $label;
+          
+          if($this->isDateField($field)) {
+            $return[$fieldKey.'_days2today'] =
+              $label . ' to Today (in Days)';
+            
+            $return[$fieldKey.'_months2today'] =
+              $label . ' to Today (in Months)';
+            
+            $return[$fieldKey.'_years2today'] =
+              $label . ' to Today (in Years)';
+          }
         }
         $customFields = $this->getCustomfieldsForEntity($entityDef->entity);
         foreach($customFields as $customFieldKey => $customFieldLabel) {
@@ -59,6 +70,24 @@ class CRM_CivirulesConditions_Form_FieldValueComparison extends CRM_CivirulesCon
     return $return;
   }
 
+  protected function isDateField($field) {
+    $result = false;
+    
+    if($field['type'] == CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME) {
+      $result = true;
+    }
+    
+    if($field['type'] == CRM_Utils_Type::T_DATE) {
+      $result = true;
+    }
+    
+    if($field['type'] == CRM_Utils_Type::T_TIMESTAMP) {
+      $result = true;
+    }
+    
+    return $result;
+  }
+  
   protected function getCustomfieldsForEntity($entity) {
     $extends = array($entity);
     if ($entity == 'Contact') {
