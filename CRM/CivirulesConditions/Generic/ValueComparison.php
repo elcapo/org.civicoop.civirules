@@ -67,7 +67,10 @@ abstract class CRM_CivirulesConditions_Generic_ValueComparison extends CRM_Civir
    * @access protected
    */
   protected function getComparisonValue() {
-    if ( strpos( ( $this->conditionParams['field'] ), 'date' ) ) {
+    $entity = $this->conditionParams['entity'];
+    $field = $this->conditionParams['field'];
+
+    if ( $this->isDateField( $entity, $field ) ) {
       if ( is_numeric( $this->conditionParams['value'] ) ) {
           $this->conditionParams['value'] = Date( 'Y-m-d',
             strtotime( $this->conditionParams['value'] . ' day' ) );
@@ -100,6 +103,44 @@ abstract class CRM_CivirulesConditions_Generic_ValueComparison extends CRM_Civir
     }
   }
 
+  /**
+   * Helps to determine wether a field is a date.
+   * 
+   * @param string Entity
+   * @param string Field name
+   * @return boolean True if the field is a date.
+   */
+  protected function isDateField($entity, $fieldname) {
+    $isDate = false;
+    
+    $dateType = CRM_Utils_Type::T_DATE;
+    $timeType = CRM_Utils_Type::T_TIME;
+    $dateTimeType = $dateType + $timeType;
+    
+    $fields = civicrm_api3(
+      $entity,
+      'getfields',
+      array(
+        'sequential' => 1,
+        'api_action' => 'get',
+      )
+    );
+    
+    foreach( $fields['values'] as $field ) {
+      if ( $field['name'] == $fieldname ) {
+        switch( $field['type'] ) {
+          case $dateType:
+          case $timeType:
+          case $dateTimeType:
+            $isDate = true;
+            return $isDate;
+        }
+      }
+    }
+    
+    return $isDate;
+  }
+  
   /**
    * Returns an operator for comparison
    *
