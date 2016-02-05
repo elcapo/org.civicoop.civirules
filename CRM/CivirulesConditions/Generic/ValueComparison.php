@@ -67,6 +67,13 @@ abstract class CRM_CivirulesConditions_Generic_ValueComparison extends CRM_Civir
    * @access protected
    */
   protected function getComparisonValue() {
+    if ( strpos( ( $this->conditionParams['field'] ), 'date' ) ) {
+      if ( is_numeric( $this->conditionParams['value'] ) ) {
+          $this->conditionParams['value'] = Date( 'Y-m-d',
+            strtotime( $this->conditionParams['value'] . ' day' ) );
+      }
+    }
+    
     switch ($this->getOperator()) {
       case '=':
       case '!=':
