@@ -71,10 +71,8 @@ abstract class CRM_CivirulesConditions_Generic_ValueComparison extends CRM_Civir
     $field = $this->conditionParams['field'];
 
     if ( $this->isDateField( $entity, $field ) ) {
-      if ( is_numeric( $this->conditionParams['value'] ) ) {
-          $this->conditionParams['value'] = Date( 'Y-m-d',
-            strtotime( $this->conditionParams['value'] . ' day' ) );
-      }
+      $this->conditionParams['value'] = Date( 'Y-m-d',
+        strtotime( $this->conditionParams['value'] ) );
     }
     
     switch ($this->getOperator()) {
@@ -174,7 +172,8 @@ abstract class CRM_CivirulesConditions_Generic_ValueComparison extends CRM_Civir
   public function isConditionValid(CRM_Civirules_TriggerData_TriggerData $triggerData) {
     $value = $this->getFieldValue($triggerData);
     $compareValue = $this->getComparisonValue();
-    return $this->compare($value, $compareValue, $this->getOperator());
+    $result = $this->compare($value, $compareValue, $this->getOperator());
+    return $result;
   }
 
   /**
